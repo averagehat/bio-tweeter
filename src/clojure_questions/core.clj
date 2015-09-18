@@ -38,15 +38,13 @@
 
 (defn filter-used [qs]
   (let [used (into [] (map #(first (butlast (str/split %  #" "))) [(get-last-tweet-content)]))]
-    (println used)
     (doall (remove #(contains? used (:title %)) qs))))
 
-(defn send-tweet [t]
+(defn send-tweet []
   (let [msg (str (first (:title t)) \space (:link t))]
     (println "Tweeting: " msg)
     (tr/statuses-update :oauth-creds creds
                         :params {:status msg})))
-
 (def new-questions (comp filter-used questions))
 
 (defn doseq-sleep
