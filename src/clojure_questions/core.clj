@@ -26,16 +26,14 @@
   (html/select (fetch-url biostars-url) selector))
 
 (defn title-url [e]
- (let [base-url "biostars.org"
-       title (str (:content e) ":")
-       url (str base-url (:href (:attrs e)))]
-   {:title title :link url}))
+  (let [base-url "biostars.org"]
+    {:title (:content e) :link (str base-url (:href (:attrs e)))}))
 
 (def questions (comp (partial map title-url) raw-questions))
 
 (defn get-last-tweet-content []
   (->> (tr/statuses-user-timeline :oauth-creds creds
-                                  :params {:count 1})
+                                  :params {:count 9})
        :body first :text))
 ;(defn get-last-tweet-content []
 ;  (->> (tr/statuses-user-timeline :oauth-creds creds
@@ -43,15 +41,13 @@
 ;       (map (comp :body first :text))))
 ;
 (defn filter-used [qs]
-  (let [used (into [] (map #(last (str/split %  #" ")) [(get-last-tweet-content)]))]
-    (println used)
-    (println qs)
-    (println (doall (:title qs)))
-    (doall (remove #(contains? used (:link %)) qs))))
+  (let [used (into [] (map #(butlast (str/split %  #" ")) [(get-last-tweet-content)]))]
+    (doall (remove #(contains? used (:title %)) qs))))
 
 
-(defn send-tweet [{:keys [title link]}]
-  (let [msg (str title \space link)]
+;(defn send-tweet [{:keys [title link]}]
+(defn send-tweet [t]
+  (let [msg (str (first (:title t)) \space (:link t))]
     (println "Tweeting: " msg)
     (tr/statuses-update :oauth-creds creds
                         :params {:status msg})))
@@ -64,7 +60,6 @@
           (f x)
           (Thread/sleep interval)))
 
-
 (defn -main [& _]
-  (doseq-sleep                 ;one minute
-    send-tweet (new-questions) (* 1000 60)))
+  (doseq-sleep                 ;ten minutes
+    send-tweet (new-questions) (* 10 60 1000)))
