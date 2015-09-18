@@ -33,19 +33,14 @@
 
 (defn get-last-tweet-content []
   (->> (tr/statuses-user-timeline :oauth-creds creds
-                                  :params {:count 9})
+                                  :params {:count 20})
        :body first :text))
-;(defn get-last-tweet-content []
-;  (->> (tr/statuses-user-timeline :oauth-creds creds
-;                                  :params {:count 2})
-;       (map (comp :body first :text))))
-;
+
 (defn filter-used [qs]
-  (let [used (into [] (map #(butlast (str/split %  #" ")) [(get-last-tweet-content)]))]
+  (let [used (into [] (map #(first (butlast (str/split %  #" "))) [(get-last-tweet-content)]))]
+    (println used)
     (doall (remove #(contains? used (:title %)) qs))))
 
-
-;(defn send-tweet [{:keys [title link]}]
 (defn send-tweet [t]
   (let [msg (str (first (:title t)) \space (:link t))]
     (println "Tweeting: " msg)
