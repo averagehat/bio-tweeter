@@ -1,4 +1,4 @@
-(ns clojure-questions.core
+(ns clojure-questions.seqanswers
   (:require ;[clojure-questions.shortener :refer [shorten]]
             [clojure.string :as str]
             [clj-http.client :as http]
@@ -16,13 +16,13 @@
 
 (def get-nodes (comp html/html-snippet :body http/get)) 
 
-(defn extract-node [url n]
+(defn extract-node [n & {:keys [url] :or {url ""}}]
   (let [{title :content {href :href} :attrs} n]
     {:title (str/join title) :link (str url href)})) ;ug-o
     ;[title href]))
 
 (defn get-questions [url selector base-url ] 
-  (map (partial extract-node base-url)
+  (map #(extract-node  % :url base-url)
        (html/select (get-nodes url) selector)))
 
 (defn make-tweet [{:keys [title link]}]
@@ -48,3 +48,4 @@
   ;filter questions
   (doseq-sleep                 ;ten minutes
    tweet (apply site get-questions) (* 10 60 1000)))) 
+
